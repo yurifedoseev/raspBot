@@ -28,9 +28,16 @@ public class Main {
             for (Update update : client.getUpdates()) {
                 System.out.println(update.Message.From.Id + " : " + update.Message.Text);
 
-                if (update.Message != null && update.Message.Text.toLowerCase().equals("/wazzup")) {
+                if (update.Message != null && update.Message.Text != null && update.Message.Text.toLowerCase().equals("/wazzup")) {
                     BufferedImage img = WebcamGrabber.grab();
-                    client.sendNewPhoto(update.Message.From.Id, convertToBytes(img));
+
+                    int sendToId = update.Message.From.Id;
+
+                    if (update.Message.Chat != null) {
+                        sendToId = update.Message.Chat.Id;
+                    }
+
+                    client.sendNewPhoto(sendToId, convertToBytes(img));
                 }
             }
 
