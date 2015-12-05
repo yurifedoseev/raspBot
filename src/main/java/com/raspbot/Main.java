@@ -4,6 +4,11 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.raspbot.botapi.client.TelegramClient;
 import com.raspbot.botapi.models.Update;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.Random;
 
 public class Main {
@@ -12,27 +17,28 @@ public class Main {
     static final String botToken = "AAGOo8wMRtFCArMJ90RGjD6pmyh3R2glKLg";
 
 
-    public static void main(String[] args) throws UnirestException, InterruptedException {
+    public static void main(String[] args) throws UnirestException, InterruptedException, IOException {
         TelegramClient client = new TelegramClient(botName, botToken);
 
         while (true) {
 
             for (Update update : client.getUpdates()) {
-                System.out.println(update.Message.Text);
+                System.out.println(update.Message.From.Id + " : " + update.Message.Text);
 
                 Random random = new Random();
+                BufferedImage img = ImageIO.read(new File("/home/yuri/Downloads/ducalis.jpg"));
 
-                int val = random.nextInt(3);
+                client.sendPhoto(update.Message.From.Id,  convertToBytes(img));
 
-                String message = "Ой всё!";
-                if (val == 1) {
-                    message = "В смысле \" " + update.Message.Text + " \" ?";
-                }
-
-                client.sendText(update.Message.From.Id, message);
             }
 
             Thread.sleep(200);
         }
+    }
+
+    private static byte[] convertToBytes(BufferedImage img) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(img, "jpg", baos);
+        return baos.toByteArray();
     }
 }

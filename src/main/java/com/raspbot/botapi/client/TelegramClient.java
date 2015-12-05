@@ -11,7 +11,11 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import com.raspbot.botapi.models.UpdateResult;
 import com.raspbot.botapi.models.Update;
+import org.apache.http.entity.ContentType;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -56,6 +60,17 @@ public class TelegramClient {
                 .field("text", text)
                 .asJson();
     }
+
+    public void sendPhoto(int userId, byte[] photo) throws UnirestException, IOException {
+        File tempFile = File.createTempFile(userId+"ds", "jpg");
+        FileOutputStream fos = new FileOutputStream(tempFile);
+        fos.write(photo);
+
+        Unirest.post(baseUrl + "sendPhoto?chat_id="+userId)
+                .field("chat_id", userId)
+                .field("photo", tempFile)
+                .asJson();
+  }
 
     private GetRequest get(String apiMethod, String queryString) {
 
