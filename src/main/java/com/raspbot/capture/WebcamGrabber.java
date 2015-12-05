@@ -10,6 +10,8 @@ public class WebcamGrabber {
         Webcam webcam = Webcam.getDefault();
         webcam.open();
 
-        return webcam.getImage();
+        BufferedImage image = webcam.getImage();
+        webcam.close();
+        return image;
     }
 }
