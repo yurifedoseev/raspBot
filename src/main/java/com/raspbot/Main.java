@@ -4,6 +4,8 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.raspbot.botapi.client.TelegramClient;
 import com.raspbot.botapi.models.Update;
 
+import java.util.Random;
+
 public class Main {
 
     static final String botName = "152958668";
@@ -17,6 +19,17 @@ public class Main {
 
             for (Update update : client.getUpdates()) {
                 System.out.println(update.Message.Text);
+
+                Random random = new Random();
+
+                int val = random.nextInt(3);
+
+                String message = "Ой всё!";
+                if (val == 1) {
+                    message = "В смысле \" " + update.Message.Text + " \" ?";
+                }
+
+                client.sendText(update.Message.From.Id, message);
             }
 
             Thread.sleep(200);

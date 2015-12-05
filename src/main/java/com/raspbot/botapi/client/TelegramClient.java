@@ -1,7 +1,10 @@
 package com.raspbot.botapi.client;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -27,7 +30,7 @@ public class TelegramClient {
 
     public List<Update> getUpdates() throws UnirestException {
 
-        HttpResponse<UpdateResult> response = get("getUpdates", "offset="+offset).asObject(UpdateResult.class);
+        HttpResponse<UpdateResult> response = get("getUpdates", "offset=" + offset).asObject(UpdateResult.class);
         UpdateResult apiResponse = response.getBody();
 
         List<Update> updates = Arrays.asList(apiResponse.Result);
@@ -47,10 +50,17 @@ public class TelegramClient {
         initializeMapper();
     }
 
+    public void sendText(int userId, String text) throws UnirestException {
+        Unirest.post(baseUrl + "sendMessage")
+                .field("chat_id", userId)
+                .field("text", text)
+                .asJson();
+    }
+
     private GetRequest get(String apiMethod, String queryString) {
 
         String query = baseUrl + apiMethod;
-        if (queryString != null && !queryString.isEmpty()){
+        if (queryString != null && !queryString.isEmpty()) {
             query += "?" + queryString;
         }
 
