@@ -28,8 +28,12 @@ public class Main {
                 Random random = new Random();
                 BufferedImage img = ImageIO.read(new File("/home/yuri/Downloads/ducalis.jpg"));
 
-                client.sendPhoto(update.Message.From.Id,  convertToBytes(img));
-
+                if (update.Message.Photo != null && update.Message.Photo.length > 0) {
+                    client.sendExistingPhoto(update.Message.From.Id, update.Message.Photo[0].FileId);
+                }
+                else {
+                    client.sendNewPhoto(update.Message.From.Id, convertToBytes(img));
+                }
             }
 
             Thread.sleep(200);

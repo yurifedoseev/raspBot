@@ -61,7 +61,7 @@ public class TelegramClient {
                 .asJson();
     }
 
-    public void sendPhoto(int userId, byte[] photo) throws UnirestException, IOException {
+    public void sendNewPhoto(int userId, byte[] photo) throws UnirestException, IOException {
         File tempFile = File.createTempFile(userId+"ds", "jpg");
         FileOutputStream fos = new FileOutputStream(tempFile);
         fos.write(photo);
@@ -70,7 +70,16 @@ public class TelegramClient {
                 .field("chat_id", userId)
                 .field("photo", tempFile)
                 .asJson();
-  }
+    }
+
+    public void sendExistingPhoto(int userId, String photoId) throws UnirestException, IOException {
+
+        Unirest.post(baseUrl + "sendPhoto?chat_id=" + userId)
+                .field("chat_id", userId)
+                .field("photo", photoId)
+                .asJson();
+    }
+
 
     private GetRequest get(String apiMethod, String queryString) {
 

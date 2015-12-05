@@ -37,6 +37,8 @@ public class Message {
 
     public Location Location;
 
+    public File File;
+
     public User NewChatParticipant;
 
     public User LeftChatParticipant;
