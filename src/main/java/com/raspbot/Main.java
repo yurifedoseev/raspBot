@@ -3,6 +3,7 @@ package com.raspbot;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.raspbot.botapi.client.TelegramClient;
 import com.raspbot.botapi.models.Update;
+import com.raspbot.capture.WebcamGrabber;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -20,18 +21,15 @@ public class Main {
     public static void main(String[] args) throws UnirestException, InterruptedException, IOException {
         TelegramClient client = new TelegramClient(botName, botToken);
 
+        WebcamGrabber.grab();
+
         while (true) {
 
             for (Update update : client.getUpdates()) {
                 System.out.println(update.Message.From.Id + " : " + update.Message.Text);
 
-                Random random = new Random();
-                BufferedImage img = ImageIO.read(new File("/home/yuri/Downloads/ducalis.jpg"));
-
-                if (update.Message.Photo != null && update.Message.Photo.length > 0) {
-                    client.sendExistingPhoto(update.Message.From.Id, update.Message.Photo[0].FileId);
-                }
-                else {
+                if (update.Message != null && update.Message.Text.toLowerCase().equals("/wazzup")) {
+                    BufferedImage img = WebcamGrabber.grab();
                     client.sendNewPhoto(update.Message.From.Id, convertToBytes(img));
                 }
             }
