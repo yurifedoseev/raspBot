@@ -8,5 +8,5 @@ public class User {
 
     public String LastName;
 
-    public String UserName;
+    public String Username;
 }

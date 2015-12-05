@@ -7,7 +7,7 @@ public class Chat {
 
     public String Title;
 
-    public String UserName;
+    public String Username;
 
     /**
      * First name of the other party in a private chat

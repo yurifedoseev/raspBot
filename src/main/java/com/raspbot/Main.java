@@ -2,6 +2,7 @@ package com.raspbot;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.raspbot.botapi.client.TelegramClient;
+import com.raspbot.botapi.models.Update;
 
 public class Main {
 
@@ -13,7 +14,10 @@ public class Main {
         TelegramClient client = new TelegramClient(botName, botToken);
 
         while (true) {
-            client.getUpdates();
+
+            for (Update update : client.getUpdates()) {
+                System.out.println(update.Message.Text);
+            }
 
             Thread.sleep(200);
         }
