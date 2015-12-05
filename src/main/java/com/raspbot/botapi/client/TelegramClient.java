@@ -5,6 +5,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.GetRequest;
 import com.raspbot.botapi.models.UpdateResult;
 import com.raspbot.botapi.models.Update;
 
@@ -26,6 +27,38 @@ public class TelegramClient {
 
     public List<Update> getUpdates() throws UnirestException {
 
+        HttpResponse<UpdateResult> response = get("getUpdates", "offset="+offset).asObject(UpdateResult.class);
+        UpdateResult apiResponse = response.getBody();
+
+        List<Update> updates = Arrays.asList(apiResponse.Result);
+
+        updateOffset(updates);
+
+        return updates;
+    }
+
+    private void updateOffset(List<Update> updates) {
+        if (updates.size() > 0) {
+            offset = updates.stream().map(item -> item.UpdateId).max(Integer::max).get() + 1;
+        }
+    }
+
+    static {
+        initializeMapper();
+    }
+
+    private GetRequest get(String apiMethod, String queryString) {
+
+        String query = baseUrl + apiMethod;
+        if (queryString != null && !queryString.isEmpty()){
+            query += "?" + queryString;
+        }
+
+        return Unirest.get(query);
+    }
+
+
+    private static void initializeMapper() {
         Unirest.setObjectMapper(new ObjectMapper() {
 
             private com.fasterxml.jackson.databind.ObjectMapper mapper
@@ -52,16 +85,5 @@ public class TelegramClient {
                 }
             }
         });
-
-        HttpResponse<UpdateResult> response = Unirest.get(baseUrl + "getUpdates?offset="+offset).asObject(UpdateResult.class);
-        UpdateResult apiResponse = response.getBody();
-
-        List<Update> updates = Arrays.asList(apiResponse.Result);
-
-        if (updates.size() > 0) {
-            offset = updates.stream().map(item -> item.UpdateId).max(Integer::max).get() + 1;
-        }
-
-        return updates;
     }
 }
