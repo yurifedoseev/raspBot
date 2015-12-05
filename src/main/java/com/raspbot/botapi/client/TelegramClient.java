@@ -16,9 +16,12 @@ public class TelegramClient {
 
     private final String baseUrl;
 
+    private int offset;
+
     public TelegramClient(String botName, String botToken) {
 
         this.baseUrl = "https://api.telegram.org/bot" + botName + ":" + botToken + "/";
+        offset = 0;
     }
 
     public List<Update> getUpdates() throws UnirestException {
@@ -50,9 +53,15 @@ public class TelegramClient {
             }
         });
 
-        HttpResponse<UpdateResult> response = Unirest.get(baseUrl + "getUpdates").asObject(UpdateResult.class);
+        HttpResponse<UpdateResult> response = Unirest.get(baseUrl + "getUpdates?offset="+offset).asObject(UpdateResult.class);
         UpdateResult apiResponse = response.getBody();
 
-        return Arrays.asList(apiResponse.Result);
+        List<Update> updates = Arrays.asList(apiResponse.Result);
+
+        if (updates.size() > 0) {
+            offset = updates.stream().map(item -> item.UpdateId).max(Integer::max).get() + 1;
+        }
+
+        return updates;
     }
 }
