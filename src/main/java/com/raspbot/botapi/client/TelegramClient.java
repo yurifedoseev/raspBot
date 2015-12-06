@@ -1,30 +1,29 @@
 package com.raspbot.botapi.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.ObjectMapper;
-import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.mashape.unirest.request.GetRequest;
-import com.raspbot.botapi.models.UpdateResult;
 import com.raspbot.botapi.models.Update;
-import org.apache.http.entity.ContentType;
+import com.raspbot.botapi.models.UpdateResult;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.mashape.unirest.http.Unirest.get;
+import static com.mashape.unirest.http.Unirest.post;
+
 public class TelegramClient {
 
     private final String baseUrl;
 
     private int offset;
+
+    static {
+        RestConfig.init();
+    }
+
 
     public TelegramClient(String botName, String botToken) {
 
@@ -34,13 +33,11 @@ public class TelegramClient {
 
     public List<Update> getUpdates() throws UnirestException {
 
-        HttpResponse<UpdateResult> response = get("getUpdates", "offset=" + offset).asObject(UpdateResult.class);
+        HttpResponse<UpdateResult> response = get("getUpdates?offset=" + offset).asObject(UpdateResult.class);
         UpdateResult apiResponse = response.getBody();
 
         List<Update> updates = Arrays.asList(apiResponse.Result);
-
         updateOffset(updates);
-
         return updates;
     }
 
@@ -50,12 +47,8 @@ public class TelegramClient {
         }
     }
 
-    static {
-        initializeMapper();
-    }
-
     public void sendText(int userId, String text) throws UnirestException {
-        Unirest.post(baseUrl + "sendMessage")
+        post(baseUrl + "sendMessage")
                 .field("chat_id", userId)
                 .field("text", text)
                 .asJson();
@@ -66,58 +59,16 @@ public class TelegramClient {
         FileOutputStream fos = new FileOutputStream(tempFile);
         fos.write(photo);
 
-        Unirest.post(baseUrl + "sendPhoto?chat_id="+userId)
+        post(baseUrl + "sendPhoto?chat_id="+userId)
                 .field("chat_id", userId)
                 .field("photo", tempFile)
                 .asJson();
     }
 
     public void sendExistingPhoto(int userId, String photoId) throws UnirestException, IOException {
-
-        Unirest.post(baseUrl + "sendPhoto?chat_id=" + userId)
+        post(baseUrl + "sendPhoto?chat_id=" + userId)
                 .field("chat_id", userId)
                 .field("photo", photoId)
                 .asJson();
-    }
-
-
-    private GetRequest get(String apiMethod, String queryString) {
-
-        String query = baseUrl + apiMethod;
-        if (queryString != null && !queryString.isEmpty()) {
-            query += "?" + queryString;
-        }
-
-        return Unirest.get(query);
-    }
-
-
-    private static void initializeMapper() {
-        Unirest.setObjectMapper(new ObjectMapper() {
-
-            private com.fasterxml.jackson.databind.ObjectMapper mapper
-                    = new com.fasterxml.jackson.databind.ObjectMapper();
-
-            {
-                mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
-            }
-
-            public <T> T readValue(String value, Class<T> valueType) {
-
-                try {
-                    return mapper.readValue(value, valueType);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            public String writeValue(Object o) {
-                try {
-                    return mapper.writeValueAsString(o);
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
     }
 }
