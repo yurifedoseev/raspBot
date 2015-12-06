@@ -14,7 +14,7 @@ public class BotLauncher {
     static final String botToken = "AAGOo8wMRtFCArMJ90RGjD6pmyh3R2glKLg";
 
     public void run() throws InterruptedException, IOException, UnirestException {
-        TelegramClient client = new TelegramClient(botName, botToken);
+        TelegramClient client = new TelegramClient(Config.getBotToken());
 
         while (true) {
 

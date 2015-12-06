@@ -2,6 +2,7 @@ package com.raspbot.botapi.client;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.raspbot.Config;
 import com.raspbot.botapi.models.Update;
 import com.raspbot.botapi.models.UpdateResult;
 
@@ -24,16 +25,15 @@ public class TelegramClient {
         RestConfig.init();
     }
 
+    public TelegramClient(String botToken) {
 
-    public TelegramClient(String botName, String botToken) {
-
-        this.baseUrl = "https://api.telegram.org/bot" + botName + ":" + botToken + "/";
+        this.baseUrl = Config.getApiUrl() + botToken + "/";
         offset = 0;
     }
 
     public List<Update> getUpdates() throws UnirestException {
 
-        HttpResponse<UpdateResult> response = get("getUpdates?offset=" + offset).asObject(UpdateResult.class);
+        HttpResponse<UpdateResult> response = get(baseUrl + "getUpdates?offset=" + offset).asObject(UpdateResult.class);
         UpdateResult apiResponse = response.getBody();
 
         List<Update> updates = Arrays.asList(apiResponse.Result);
