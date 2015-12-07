@@ -5,29 +5,40 @@ import com.raspbot.botapi.client.TelegramClient;
 import com.raspbot.botapi.models.Message;
 import com.raspbot.botapi.models.Update;
 import com.raspbot.capture.WebcamGrabber;
-import com.raspbot.twitter.TwitterApi;
-import twitter4j.Status;
+import com.raspbot.capture.WebcamSarxosGrabber;
+import com.raspbot.commands.BotCommand;
+import com.raspbot.commands.ScreenshotCommand;
+import com.raspbot.commands.TweetCommand;
 import twitter4j.TwitterException;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class BotLauncher {
 
+    private final WebcamGrabber webcamGrabber;
+    private TelegramClient client;
+    private final BotCommand screenshotCommand;
+    private final BotCommand tweetCommand;
+
+    public BotLauncher() {
+        webcamGrabber = new WebcamSarxosGrabber();
+        client = new TelegramClient(Config.getBotToken());
+        screenshotCommand = new ScreenshotCommand(webcamGrabber, client);
+        tweetCommand = new TweetCommand(webcamGrabber, client);
+    }
+
     private final static int THREAD_COUNT = 10;
 
     public void run() throws InterruptedException, IOException, UnirestException, TwitterException {
-        TelegramClient client = new TelegramClient(Config.getBotToken());
         ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
 
         while (true) {
             for (Update update : client.getUpdates()) {
-
                 executor.submit((Runnable) () -> {
                     try {
-                        processMessage(client, update.Message);
+                        processMessage(update.Message);
                     } catch (IOException | UnirestException | TwitterException e) {
                         e.printStackTrace();
                     }
@@ -38,57 +49,27 @@ public class BotLauncher {
         }
     }
 
-    private void processMessage(TelegramClient client, Message message) throws IOException, UnirestException, TwitterException {
+    private void processMessage(Message message) throws IOException, UnirestException, TwitterException {
         LogMessage(message);
-        if (isCommand(message, "/чекак") || isCommand(message, "/wazzup")) {
-
-            if (message.Chat.Id == -30979178) {
-                client.sendText(message.Chat.Id, "Иди делай UML, " + message.From.FirstName);
-                return;
-            }
-
-            BufferedImage img = WebcamGrabber.grab();
-            client.sendNewPhoto(message.Chat.Id, ImageUtils.convertToBytes(img));
-
+        if (isCommand(message, "/wazzup")) {
+            this.screenshotCommand.exec(message);
         }
 
         if (isCommand(message, "/tweet")) {
-
-            if (message.Chat.Id == -30979178) {
-                client.sendText(message.Chat.Id, "Иди делай UML, " + message.From.FirstName);
-                return;
-            }
-
-            if (message.From.Id == 102160912) {
-                client.sendText(message.Chat.Id, "Азамат, успокойся!");
-                return;
-            }
-
-            if (message.From.Id == 119475929) {
-                client.sendText(message.Chat.Id, "Саша - в бан!");
-                return;
-            }
-
-
-            TwitterApi twitter = new TwitterApi();
-            BufferedImage img = WebcamGrabber.grab();
-            Status response = twitter.send(img);
-            client.sendText(message.Chat.Id, "https://twitter.com/inno_cave/status/" + response.getId());
+            this.tweetCommand.exec(message);
         }
     }
 
     private void LogMessage(Message message) {
 
+        String log = message.From.FirstName +
+                " " + message.From.LastName +
+                " " + message.From.Username +
+                " " + message.From.Id +
+                " " + message.Chat.Id +
+                " " + message.Text;
 
-        System.out.println(message.From.FirstName + " " + message.From.LastName + " " + message.From.Username + " "
-                + message.From.Id + " "
-                +
-                "chat:" + message.Chat.Id
-                +
-                " : " + message.Text
-                +
-                " thread:" + Thread.currentThread().getId()
-                );
+        System.out.println(log);
     }
 
     private boolean isCommand(Message message, String commandText) {
