@@ -11,16 +11,27 @@ import twitter4j.TwitterException;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class BotLauncher {
 
-   public void run() throws InterruptedException, IOException, UnirestException, TwitterException {
+    private final static int THREAD_COUNT = 10;
+
+    public void run() throws InterruptedException, IOException, UnirestException, TwitterException {
         TelegramClient client = new TelegramClient(Config.getBotToken());
+        ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
 
         while (true) {
-
             for (Update update : client.getUpdates()) {
-                processMessage(client, update.Message);
+
+                executor.submit((Runnable) () -> {
+                    try {
+                        processMessage(client, update.Message);
+                    } catch (IOException | UnirestException | TwitterException e) {
+                        e.printStackTrace();
+                    }
+                });
             }
 
             Thread.sleep(200);
@@ -28,11 +39,7 @@ public class BotLauncher {
     }
 
     private void processMessage(TelegramClient client, Message message) throws IOException, UnirestException, TwitterException {
-        System.out.println(message.From.FirstName + " " + message.From.LastName + " " + message.From.Username + " " + message.From.Id + " "
-                +
-                "chat:" + message.Chat.Id
-                +
-                " : " + message.Text);
+        LogMessage(message);
         if (isCommand(message, "/чекак") || isCommand(message, "/wazzup")) {
 
             if (message.Chat.Id == -30979178) {
@@ -52,7 +59,7 @@ public class BotLauncher {
                 return;
             }
 
-            if (message.From.Id == 102160912){
+            if (message.From.Id == 102160912) {
                 client.sendText(message.Chat.Id, "Азамат, успокойся!");
                 return;
             }
@@ -68,6 +75,20 @@ public class BotLauncher {
             Status response = twitter.send(img);
             client.sendText(message.Chat.Id, "https://twitter.com/inno_cave/status/" + response.getId());
         }
+    }
+
+    private void LogMessage(Message message) {
+
+
+        System.out.println(message.From.FirstName + " " + message.From.LastName + " " + message.From.Username + " "
+                + message.From.Id + " "
+                +
+                "chat:" + message.Chat.Id
+                +
+                " : " + message.Text
+                +
+                " thread:" + Thread.currentThread().getId()
+                );
     }
 
     private boolean isCommand(Message message, String commandText) {
