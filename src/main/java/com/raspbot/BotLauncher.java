@@ -5,15 +5,16 @@ import com.raspbot.botapi.client.TelegramClient;
 import com.raspbot.botapi.models.Message;
 import com.raspbot.botapi.models.Update;
 import com.raspbot.capture.WebcamGrabber;
+import com.raspbot.twitter.TwitterApi;
+import twitter4j.Status;
+import twitter4j.TwitterException;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public class BotLauncher {
 
-    static final String botName = "152958668";
-    static final String botToken = "AAGOo8wMRtFCArMJ90RGjD6pmyh3R2glKLg";
-
-    public void run() throws InterruptedException, IOException, UnirestException {
+   public void run() throws InterruptedException, IOException, UnirestException, TwitterException {
         TelegramClient client = new TelegramClient(Config.getBotToken());
 
         while (true) {
@@ -26,11 +27,46 @@ public class BotLauncher {
         }
     }
 
-    private void processMessage(TelegramClient client, Message message) throws IOException, UnirestException {
-        System.out.println(message.From.Id + " : " + message.Text);
-        if (isCommand(message, "/чекак")) {
+    private void processMessage(TelegramClient client, Message message) throws IOException, UnirestException, TwitterException {
+        System.out.println(message.From.FirstName + " " + message.From.LastName + " " + message.From.Username + " " + message.From.Id + " "
+                +
+                "chat:" + message.Chat.Id
+                +
+                " : " + message.Text);
+        if (isCommand(message, "/чекак") || isCommand(message, "/wazzup")) {
+
+            if (message.Chat.Id == -30979178) {
+                client.sendText(message.Chat.Id, "Иди делай UML, " + message.From.FirstName);
+                return;
+            }
+
             BufferedImage img = WebcamGrabber.grab();
             client.sendNewPhoto(message.Chat.Id, ImageUtils.convertToBytes(img));
+
+        }
+
+        if (isCommand(message, "/tweet")) {
+
+            if (message.Chat.Id == -30979178) {
+                client.sendText(message.Chat.Id, "Иди делай UML, " + message.From.FirstName);
+                return;
+            }
+
+            if (message.From.Id == 102160912){
+                client.sendText(message.Chat.Id, "Азамат, успокойся!");
+                return;
+            }
+
+            if (message.From.Id == 119475929) {
+                client.sendText(message.Chat.Id, "Саша - в бан!");
+                return;
+            }
+
+
+            TwitterApi twitter = new TwitterApi();
+            BufferedImage img = WebcamGrabber.grab();
+            Status response = twitter.send(img);
+            client.sendText(message.Chat.Id, "https://twitter.com/inno_cave/status/" + response.getId());
         }
     }
 

@@ -11,7 +11,8 @@ public class WebcamGrabber {
         webcam.open();
 
         BufferedImage image = webcam.getImage();
-        webcam.close();
+//        if (webcam.isOpen())
+//            webcam.close();
         return image;
     }
 }
