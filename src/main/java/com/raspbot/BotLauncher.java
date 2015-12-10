@@ -13,6 +13,7 @@ import com.raspbot.twitter.CommandLoader;
 import twitter4j.TwitterException;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -23,21 +24,19 @@ public class BotLauncher {
     private final static int THREAD_COUNT = 10;
 
     private TelegramClient client;
-    private final BotCommand screenshotCommand;
-    private final BotCommand tweetCommand;
     private final Map<String, BotCommand> commandMap;
 
-    public BotLauncher() {
+    public BotLauncher() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
         WebcamGrabber webcamGrabber = new WebcamSarxosGrabber();
         client = new TelegramClient(Config.getBotToken());
-        screenshotCommand = new ScreenshotCommand(webcamGrabber, client);
-        tweetCommand = new TweetCommand(webcamGrabber, client);
 
-        commandMap = new HashMap<>();
-        commandMap.put("/wazzup", new ScreenshotCommand(webcamGrabber, client));
-        commandMap.put("/tweet", new TweetCommand(webcamGrabber, client));
-        CommandLoader.load();
+        commandMap = CommandLoader.load(webcamGrabber, client);
+
+//        commandMap = new HashMap<>();
+//        commandMap.put("/wazzup", new ScreenshotCommand(webcamGrabber, client));
+//        commandMap.put("/tweet", new TweetCommand(webcamGrabber, client));
+
     }
 
     public void run() throws InterruptedException, IOException, UnirestException, TwitterException {
@@ -68,14 +67,6 @@ public class BotLauncher {
         if (command != null){
             command.exec(message);
         }
-//
-//        if (isCommand(message, "/wazzup")) {
-//            this.screenshotCommand.exec(message);
-//        }
-//
-//        if (isCommand(message, "/tweet")) {
-//            this.tweetCommand.exec(message);
-//        }
     }
 
     private void LogMessage(Message message) {
@@ -88,10 +79,6 @@ public class BotLauncher {
                 " " + message.Text;
 
         System.out.println(log);
-    }
-
-    private boolean isCommand(Message message, String commandText) {
-        return message != null && message.Text != null && message.Text.toLowerCase().equals(commandText);
     }
 
     private String getCommandText(Message message) {

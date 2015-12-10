@@ -7,10 +7,11 @@ import twitter4j.TwitterException;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 public class Main {
 
-    public static void main(String[] args) throws UnirestException, InterruptedException, IOException, TwitterException {
+    public static void main(String[] args) throws UnirestException, InterruptedException, IOException, TwitterException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
         BotLauncher botLauncher = new BotLauncher();
         botLauncher.run();
     }
