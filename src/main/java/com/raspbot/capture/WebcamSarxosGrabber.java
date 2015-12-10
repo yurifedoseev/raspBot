@@ -9,8 +9,13 @@ import java.io.IOException;
  */
 public class WebcamSarxosGrabber implements WebcamGrabber {
 
+    private final Webcam webcam;
+
+    public WebcamSarxosGrabber() {
+        webcam = Webcam.getDefault();
+    }
+
     public BufferedImage grab() throws IOException {
-        Webcam webcam = Webcam.getDefault();
         webcam.open();
 
         BufferedImage image = webcam.getImage();
