@@ -21,6 +21,7 @@ public class WebcamSarxosGrabber implements WebcamGrabber {
         BufferedImage image = webcam.getImage();
         if (webcam.isOpen())
             webcam.close();
+
         return image;
     }
 }
