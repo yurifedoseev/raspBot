@@ -12,6 +12,7 @@ import twitter4j.TwitterException;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+@Command("/tweet")
 public class TweetCommand implements BotCommand {
 
     private WebcamGrabber webcamGrabber;

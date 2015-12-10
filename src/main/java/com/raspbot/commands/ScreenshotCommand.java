@@ -9,6 +9,7 @@ import com.raspbot.capture.WebcamGrabber;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+@Command("/wazzup")
 public class ScreenshotCommand implements BotCommand {
 
     private WebcamGrabber webcamGrabber;
@@ -21,10 +22,10 @@ public class ScreenshotCommand implements BotCommand {
 
     @Override
     public void exec(Message message) throws UnirestException, IOException {
-        if (message.Chat.Id == -30979178) {
-            client.sendText(message.Chat.Id, "Иди делай UML, " + message.From.FirstName);
-            return;
-        }
+        //if (message.Chat.Id == -30979178) {
+           // client.sendText(message.Chat.Id, "Иди делай UML, " + message.From.FirstName);
+          //  return;
+        //}
 
         BufferedImage img = webcamGrabber.grab();
         client.sendNewPhoto(message.Chat.Id, ImageUtils.convertToBytes(img));
